@@ -1,0 +1,170 @@
+{
+  "name": "My workflow 7",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "db9adc73-cc82-4265-b5e5-8fffb331ce92",
+      "name": "When chat message received",
+      "webhookId": "ad055ef9-945f-4ce7-99cd-180e33dd64ca"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Eres \"BaristaBot\", el asistente virtual de la cafetería.\nTus responsabilidades:\n1. Recomienda productos usando la herramienta 'consultar_menu'.\n2. Cuando el cliente quiera hacer un pedido:\n   - Pregúntale el método de pago si no lo ha indicado ('efectivo', 'tarjeta' o 'sinpe_movil').\n   - Confirma el pedido antes de procesarlo.\n3. Invoca la herramienta 'crear_pedido' con los IDs de producto correspondientes (Espresso: 1, Capuchino: 2, Latte Vainilla: 3, Croissant: 4).\n4. Si la herramienta devuelve un error 409 (falta de stock), infórmale al cliente amablemente qué ingrediente se agotó y sugiere otra opción."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        256,
+        0
+      ],
+      "id": "1901b3af-eef0-48a6-839f-01d002c84692",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        256,
+        224
+      ],
+      "id": "8ca07f20-09f3-41b7-ad4d-12552dbc4dad",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "CgemsqhJ0eLsRo2H",
+          "name": "DeepSeek account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        352
+      ],
+      "id": "128d5d4e-628d-44c9-9508-508e2bcc46bf",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Consulta los productos disponibles en la cafetería, incluyendo sus nombres, categorías y precios.",
+        "url": "http://localhost:3000/api/productos",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        400,
+        496
+      ],
+      "id": "d84e6482-ff13-4e07-858c-0323a8162d0c",
+      "name": "consultar_menu"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Registra una orden de compra en la cafetería. Úsala ÚNICAMENTE cuando el usuario confirme explícitamente la compra. Requiere metodo_pago ('efectivo', 'tarjeta' o 'sinpe_movil') y un array items con los objetos { producto_id: number, cantidad: number }.",
+        "url": "http://localhost:3000/api/pedidos",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"metodo_pago\": \"={{ $fromAI('metodo_pago', 'Método de pago: efectivo, tarjeta o sinpe_movil', 'string') }}\",\n  \"items\": [\n    {\n      \"producto_id\": {{ $fromAI('producto_id', 'ID numérico del producto (1 para Espresso, 2 para Capuchino, etc.)', 'number') }},\n      \"cantidad\": {{ $fromAI('cantidad', 'Cantidad entera de productos a ordenar', 'number') }}\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.5,
+      "position": [
+        400,
+        656
+      ],
+      "id": "42f50c6b-e7be-4068-9bae-23c45815f311",
+      "name": "crear_pedido"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_menu": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "crear_pedido": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "016a8e8c-f030-4873-a9b1-eeb8bd1ca8e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ad1e005b9ad9a8d511a7b61177d33dfa90586827c0856d455d9192e2818d1921"
+  },
+  "nodeGroups": [],
+  "id": "q087wGranI6gKsqE",
+  "tags": []
+}
