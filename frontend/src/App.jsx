@@ -1,122 +1,55 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import AIAssistantChat from './components/AIAssistantChat'
+import CartDrawer from './components/CartDrawer'
+import Navbar from './components/Navbar'
+import ProtectedRoute from './components/ProtectedRoute'
+import { AuthProvider } from './context/AuthContext'
+import { CartProvider } from './context/CartContext'
+import { ToastProvider } from './context/ToastContext'
+import InventoryPage from './pages/InventoryPage'
+import MenuPage from './pages/MenuPage'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [activeTab, setActiveTab] = useState('menu')
+  const [cartOpen, setCartOpen] = useState(false)
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <ToastProvider>
+      <AuthProvider>
+        <CartProvider>
+          <div className="min-h-screen flex flex-col bg-stone-50 text-stone-900 selection:bg-amber-200 selection:text-amber-950">
+            <Navbar
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onOpenCart={() => setCartOpen(true)}
+            />
 
-      <div className="ticks"></div>
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+              {activeTab === 'menu' ? (
+                <MenuPage />
+              ) : (
+                <ProtectedRoute onCancel={() => setActiveTab('menu')}>
+                  <InventoryPage />
+                </ProtectedRoute>
+              )}
+            </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+            <footer className="border-t border-stone-200/80 bg-white/70 py-8 text-center text-xs sm:text-sm text-stone-500 backdrop-blur-xs">
+              <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-1">
+                <p>
+                  <span className="font-display font-bold text-stone-900">Café Aurora</span> · Tostado Artesanal de Especialidad
+                </p>
+                <p className="text-stone-400 text-xs">
+                  Precios expresados en Colones costarricenses (₡) · IVA 13 % incluido en el total
+                </p>
+              </div>
+            </footer>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+            <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
+            <AIAssistantChat />
+          </div>
+        </CartProvider>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
-
-export default App
